@@ -2,7 +2,10 @@
 import axios from 'axios'
 
 // Base URL for the backend API
-const API_BASE_URL = 'http://localhost:8080/api/v1'
+const API_BASE_URL = import.meta.env.PROD 
+? 'https://your-backend.railway.app/api/v1'  // Replace with actual Railway URL
+: 'http://localhost:8080/api/v1'
+
 
 // Create a single axios instance for the whole app
 const api = axios.create({
