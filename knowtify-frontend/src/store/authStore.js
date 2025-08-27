@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { authAPI } from '../services/api';
+import { create } from 'zustand'
+import { authAPI } from '../services/api'
 
 export const useAuthStore = create((set, get) => ({
   // State
@@ -11,49 +11,70 @@ export const useAuthStore = create((set, get) => ({
 
   // Actions
   login: async (credentials) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null })
     try {
-      const response = await authAPI.login(credentials);
-      const { accessToken, message } = response.data;
-      
-      localStorage.setItem('accessToken', accessToken);
-      set({ 
-        accessToken, 
-        isAuthenticated: true, 
+      const response = await authAPI.login(credentials)
+
+      // Accept common token field names
+      const token =
+        response?.data?.token ||
+        response?.data?.accessToken ||
+        response?.data?.jwt
+
+      const message = response?.data?.message
+
+      if (!token) {
+        const keys = response?.data ? Object.keys(response.data) : []
+        throw new Error(
+          `No token received from server${keys.length ? ` (keys: ${keys.join(', ')})` : ''}`
+        )
+      }
+
+      // Persist token
+      localStorage.setItem('accessToken', token)
+
+      set({
+        accessToken: token,
+        isAuthenticated: true,
         isLoading: false,
-        user: { username: credentials.username } // Basic user info
-      });
-      
-      return { success: true, message };
+        user: { username: credentials.username },
+        error: null,
+      })
+
+      return { success: true, message }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      set({ error: errorMessage, isLoading: false });
-      return { success: false, error: errorMessage };
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Login failed'
+      set({ error: errorMessage, isLoading: false, isAuthenticated: false })
+      return { success: false, error: errorMessage }
     }
   },
 
   register: async (userData) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null })
     try {
-      const response = await authAPI.register(userData);
-      set({ isLoading: false });
-      return { success: true, message: response.data.message };
+      const response = await authAPI.register(userData)
+      set({ isLoading: false })
+      return { success: true, message: response?.data?.message }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      set({ error: errorMessage, isLoading: false });
-      return { success: false, error: errorMessage };
+      const errorMessage =
+        error?.response?.data?.message || 'Registration failed'
+      set({ error: errorMessage, isLoading: false })
+      return { success: false, error: errorMessage }
     }
   },
 
   logout: () => {
-    localStorage.removeItem('accessToken');
-    set({ 
-      user: null, 
-      accessToken: null, 
+    localStorage.removeItem('accessToken')
+    set({
+      user: null,
+      accessToken: null,
       isAuthenticated: false,
-      error: null 
-    });
+      error: null,
+    })
   },
 
   clearError: () => set({ error: null }),
-}));
+}))

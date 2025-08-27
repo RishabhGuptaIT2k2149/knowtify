@@ -5,7 +5,7 @@ import RegisterPage from './pages/RegisterPage'
 import Dashboard from './pages/Dashboard'
 import KnowledgeMap from './pages/KnowledgeMap'
 import Navbar from './components/common/Navbar'
-import './index.css';
+
 
 function App() {
   const { isAuthenticated } = useAuthStore()

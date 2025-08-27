@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { studyAPI } from '../services/api'
 import { subjectColor } from '../utils/colors'
 
-
-
 function KnowledgeMap() {
   // modes: 'all' | 'week' | 'range'
   const [mode, setMode] = useState('all')
@@ -27,6 +25,7 @@ function KnowledgeMap() {
   // Density
   const [compact, setCompact] = useState(false)
 
+  // REAL API CALLS - RESTORED
   const fetchAll = async () => studyAPI.getKnowledgeMap()
   const fetchWeek = async () => studyAPI.getWeeklyReport()
   const fetchRange = async () =>
@@ -302,45 +301,44 @@ function KnowledgeMap() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-  {flattenedRows.map((r, idx) => {
-    const c = subjectColor(r.subject)
-    return (
-      <tr key={`${r.subject}-${r.name}-${idx}`} className="hover:bg-gray-50">
-        {/* Subject chip */}
-        <td className={`${cellPad} text-sm`}>
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-            {r.subject}
-          </span>
-        </td>
+                  {flattenedRows.map((r, idx) => {
+                    const c = subjectColor(r.subject)
+                    return (
+                      <tr key={`${r.subject}-${r.name}-${idx}`} className="hover:bg-gray-50">
+                        {/* Subject chip */}
+                        <td className={`${cellPad} text-sm`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
+                            {r.subject}
+                          </span>
+                        </td>
 
-        {/* Topic chip */}
-        <td className={`${cellPad} text-sm`}>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            {r.name}
-          </span>
-        </td>
+                        {/* Topic chip */}
+                        <td className={`${cellPad} text-sm`}>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {r.name}
+                          </span>
+                        </td>
 
-        {/* Count */}
-        <td className={`${cellPad} text-sm text-gray-900`}>{r.count}</td>
+                        {/* Count */}
+                        <td className={`${cellPad} text-sm text-gray-900`}>{r.count}</td>
 
-        {/* Priority badge */}
-        <td className={`${cellPad} text-sm`}>
-          {r.isPriority ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">
-              PRIORITY
-            </span>
-          ) : (
-            <span className="text-xs text-gray-400">—</span>
-          )}
-        </td>
+                        {/* Priority badge */}
+                        <td className={`${cellPad} text-sm`}>
+                          {r.isPriority ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">
+                              PRIORITY
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
 
-        {/* Last studied */}
-        <td className={`${cellPad} text-sm text-gray-500`}>{r.lastStudiedAt ?? '-'}</td>
-      </tr>
-    )
-  })}
-</tbody>
-
+                        {/* Last studied */}
+                        <td className={`${cellPad} text-sm text-gray-500`}>{r.lastStudiedAt ?? '-'}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
               </table>
             </div>
           )}

@@ -36,15 +36,33 @@ public class StudyEntryController {
     }
 
   }
-  @GetMapping("/api/v1/entries")
-  public ResponseEntity<Object> listRecentEntries(
-          @AuthenticationPrincipal AuthenticatedUser user,
-          @RequestParam(defaultValue = "20") int limit
-  ) {
-    if (user == null) return ResponseEntity.status(401).build();
-    List<EntryView> items = studyEntryService.findRecent(user.userId(), limit);
-    return ResponseEntity.ok(items);
+//  @GetMapping("/api/v1/entries")
+//  public ResponseEntity<Object> listRecentEntries(
+//          @AuthenticationPrincipal AuthenticatedUser user,
+//          @RequestParam(defaultValue = "20") int limit
+//  ) {
+//    if (user == null) return ResponseEntity.status(401).build();
+//    List<EntryView> items = studyEntryService.findRecent(user.userId(), limit);
+//    return ResponseEntity.ok(items);
+//  }
+// In StudyEntryController.java
+@GetMapping
+public ResponseEntity<List<StudyDtos.EntryView>> listRecentEntries(
+        @AuthenticationPrincipal AuthenticatedUser user,
+        @RequestParam(defaultValue = "20") int limit
+) {
+  if (user == null) {
+    return ResponseEntity.status(401).build();
   }
+
+  System.out.println("📋 Getting recent entries for user: " + user.userId() + ", limit: " + limit);
+
+  List<StudyDtos.EntryView> items = studyEntryService.findRecent(user.userId(), limit);
+
+  System.out.println("📊 Found " + items.size() + " recent entries");
+
+  return ResponseEntity.ok(items);
+}
 
 
 }

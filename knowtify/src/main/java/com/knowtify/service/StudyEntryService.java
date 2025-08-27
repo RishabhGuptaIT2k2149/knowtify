@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -41,24 +43,24 @@ public class StudyEntryService {
 
     // Parse sentence with Gemini
     List<ParsedTopic> parsedTopics = geminiParsingService.parseStudyEntry(request.getSentence());
-    
+
     // Create study entry
     StudyEntry studyEntry = StudyEntry.builder()
         .user(user)
         .originalSentence(request.getSentence())
         .studiedAt(LocalDateTime.now())
         .build();
-    
+
     studyEntry = studyEntryRepository.save(studyEntry);
-    
+
     // Process each parsed topic
     List<ParsedTopicDto> responseTopics = new ArrayList<>();
-    
+
     for (ParsedTopic parsedTopic : parsedTopics) {
       try {
         // Find or create subject
         Subject subject = subjectService.findOrCreateSubject(parsedTopic.subject());
-        
+
         // Find or create topic
         Topic topic = topicRepository.findByNameIgnoreCaseAndSubject_Id(
             parsedTopic.topic(), subject.getId())
@@ -70,16 +72,16 @@ public class StudyEntryService {
                   .build();
               return topicRepository.save(newTopic);
             });
-        
+
         // Create study entry topic link
         StudyEntryTopic studyEntryTopic = StudyEntryTopic.builder()
             .studyEntry(studyEntry)
             .topic(topic)
             .isPriority(parsedTopic.priority())
             .build();
-        
+
         studyEntryTopicRepository.save(studyEntryTopic);
-        
+
         // Add to response
         responseTopics.add(ParsedTopicDto.builder()
             .name(parsedTopic.topic())
@@ -88,13 +90,13 @@ public class StudyEntryService {
             .reason(parsedTopic.reason())
             .confidence(parsedTopic.confidence())
             .build());
-            
+
       } catch (Exception e) {
         log.error("Failed to process topic: {}", parsedTopic.topic(), e);
         // Continue processing other topics
       }
     }
-    
+
     return CreateEntryResponse.builder()
         .message("Study entry created successfully")
         .entryId(studyEntry.getId())
@@ -102,15 +104,55 @@ public class StudyEntryService {
         .parsedTopics(responseTopics)
         .build();
   }
+//
+//  public List<StudyDtos.EntryView> findRecent(UUID userId, int limit) {
+//    Pageable pageable = PageRequest.of(0, Math.max(1, Math.min(limit, 100)), Sort.by(Sort.Direction.DESC, "studiedAt"));
+//    Page<StudyEntry> page = studyEntryRepository.findByUser_Id(userId, pageable);
+//    return page.getContent().stream().map(this::toEntryView).toList();
+//  }
+//
+//  private StudyDtos.EntryView toEntryView(StudyEntry e) {
+//    List<StudyEntryTopic> links = Optional.ofNullable(e.getStudyEntryTopics()).orElse(Collections.emptyList());
+//    return StudyDtos.EntryView.builder()
+//            .id(e.getId())
+//            .originalSentence(e.getOriginalSentence())
+//            .studiedAt(e.getStudiedAt())
+//            .topics(
+//                    links.stream()
+//                            .filter(l -> l.getTopic() != null)
+//                            .map(l -> StudyDtos.TopicSummary.builder()
+//                                    .name(l.getTopic().getName())
+//                                    .count(1)
+//                                    .isPriority(Boolean.TRUE.equals(l.getIsPriority()))
+//                                    .lastStudiedAt(e.getStudiedAt())
+//                                    .build())
+//                            .toList()
+//            )
+//            .build();
+//  }
+public List<StudyDtos.EntryView> findRecent(UUID userId, int limit) {
+  System.out.println("🔍 Service: Finding recent entries for user " + userId);
 
-  public List<StudyDtos.EntryView> findRecent(UUID userId, int limit) {
-    Pageable pageable = PageRequest.of(0, Math.max(1, Math.min(limit, 100)), Sort.by(Sort.Direction.DESC, "studiedAt"));
-    Page<StudyEntry> page = studyEntryRepository.findByUser_Id(userId, pageable);
-    return page.getContent().stream().map(this::toEntryView).toList();
-  }
+  Pageable pageable = PageRequest.of(0, Math.max(1, Math.min(limit, 100)),
+          Sort.by(Sort.Direction.DESC, "studiedAt"));
+
+  Page<StudyEntry> page = studyEntryRepository.findByUser_Id(userId, pageable);
+
+  System.out.println("📄 Found page with " + page.getContent().size() + " entries");
+
+  List<StudyDtos.EntryView> result = page.getContent().stream()
+          .map(this::toEntryView)
+          .collect(Collectors.toList());
+
+  System.out.println("✅ Converted to " + result.size() + " EntryView objects");
+
+  return result;
+}
 
   private StudyDtos.EntryView toEntryView(StudyEntry e) {
-    List<StudyEntryTopic> links = Optional.ofNullable(e.getStudyEntryTopics()).orElse(Collections.emptyList());
+    List<StudyEntryTopic> links = Optional.ofNullable(e.getStudyEntryTopics())
+            .orElse(Collections.emptyList());
+
     return StudyDtos.EntryView.builder()
             .id(e.getId())
             .originalSentence(e.getOriginalSentence())
@@ -124,7 +166,7 @@ public class StudyEntryService {
                                     .isPriority(Boolean.TRUE.equals(l.getIsPriority()))
                                     .lastStudiedAt(e.getStudiedAt())
                                     .build())
-                            .toList()
+                            .collect(Collectors.toList())
             )
             .build();
   }

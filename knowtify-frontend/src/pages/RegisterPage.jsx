@@ -15,12 +15,13 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    // REAL API CALL - RESTORED
     const res = await register(formData)
     if (res.success) navigate('/login')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
@@ -28,9 +29,11 @@ function RegisterPage() {
             <BookOpen className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Create your Knowtify account
+            Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">It’s fast and secure.</p>
+          <p className="mt-2 text-sm text-gray-600">
+            It's fast and secure.
+          </p>
         </div>
 
         {/* Form */}
@@ -43,11 +46,12 @@ function RegisterPage() {
                 type="text"
                 required
                 className="input-field mt-1"
-                placeholder="Enter a username"
+                placeholder="Enter your username"
                 value={formData.username}
                 onChange={handleChange}
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700">Password</label>
               <input
@@ -55,35 +59,38 @@ function RegisterPage() {
                 type="password"
                 required
                 className="input-field mt-1"
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
           </div>
 
-          {/* Error */}
+          {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-primary w-full disabled:opacity-50"
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Creating account...' : 'Sign up'}
+            {isLoading ? 'Creating account...' : 'Create account'}
           </button>
 
-          {/* Link */}
+          {/* Login Link */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-                Sign in
+              <Link
+                to="/login"
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
+                Sign in here
               </Link>
             </p>
           </div>
