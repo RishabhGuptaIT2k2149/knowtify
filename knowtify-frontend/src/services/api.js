@@ -50,3 +50,4 @@ export const healthCheck = () => api.get('/health')
 
 // Default export of the axios instance (optional to import if needed)
 export default api
+//export default API_BASE_URL;
